@@ -9,10 +9,14 @@
 - [x] [P0] PRJ-001：项目已关联远端仓库 `git@github.com:tjyx111/simple-vpn-client.git`。
 - [x] [P0] PRJ-002：已完成第一轮参考实现调研、架构拆分、实施优先级和测试策略记录。
 - [x] [P0] PRJ-005：已基于 `gxsdn2`、`xacc-route-sdk2` 及其团队规范整理根级全局门禁 `AGENTS.md`；测试：文档链接、UTF-8、唯一状态台账和 `git diff --check`。
-- [ ] [P0] PRJ-003：安装并固定 Rust 工具链，建立 Cargo workspace、格式检查、Clippy、测试和 Windows 构建门禁。
+- [x] [P0] S0-001：已安装并固定 Rust 1.97.1 MSVC x64 工具链，建立无 VPN 业务逻辑的最小 Cargo workspace、自动化测试骨架和 Windows CI；测试：`scripts/verify.ps1` 一键执行文档、自动化脚本自测、fmt、Release Clippy、Release test 和 Release build。
+- [x] [P0] PRJ-003：已建立 Cargo workspace、锁定依赖、格式检查、Clippy、测试和 Windows Release 构建门禁；测试：本地与 GitHub Actions 共用 `scripts/verify.ps1`，本地全量验证通过。
+- [ ] [P0] DESIGN-001：逐功能实施前确认相关需求、8 字节协议、NetFilter ABI、失败策略和容量；现有内容仅为后续设计草案，不属于 S0。测试：`scripts/verify-design-freeze.ps1` 独立验证候选协议向量、ABI 布局/哈希和容量矩阵。
 - [ ] [P0] PRJ-004：完成需求、兼容边界、失败策略和首版范围确认后开始生产实现。
 
-当前仓库除 README 和本规划外尚无生产代码。所有功能项默认未实现。
+当前仓库尚无 VPN 生产代码。S0 的 Rust 环境和自动化测试基础已经完成；[后续设计草案](design-freeze-draft.md) 中的 MTU、容量、严格 decoder 和失败策略均未冻结，将按用户要求随各功能阶段逐项确认。
+
+跨 session 恢复研发和学习上下文时，先阅读 [新 Session 研发与学习交接](session-handoff.md)；该文档不替代本文件的唯一功能状态台账。
 
 ## 2. 需求与参考基线
 
@@ -23,6 +27,7 @@
 3. VPN 线协议使用 `D:\code\lbsprivate\client-cpp` 中的 8 字节 legacy VPN header。
 4. Windows 流量捕获使用 NetFilter SDK demo 驱动。
 5. 每个功能必须有自动化测试；真实驱动、签名和外部服务验收不能替代自动化测试。
+6. 首个版本按用户要求逐阶段实现；S0 仅完成 Rust 环境安装和自动化测试准备，不冻结后续产品行为。
 
 ### 2.2 本次调研固定的参考版本
 
@@ -47,6 +52,11 @@
 5. 每个功能必须具备正常、边界和失败路径自动化测试，测试通过不替代 Release 构建通过。
 6. 当前批准 Git 身份是 `libenshuai <tjyx111@gmail.com>`，这是对两个迅雷内部参考仓库身份规则的项目级适配。
 7. 当前仍处于设计待确认阶段；P0 工具链和验证脚本建立前，只能报告文档门禁结果。
+8. 新增简化门禁：极致逻辑简化；禁止功能以外的封装/抽象；代码逻辑一目了然；Rust 注释使用中文；纯数据转换可用简单函数式；避免结构体，除非所有权/RAII、外部 ABI 或测试替身强制需要。
+9. 每轮编码完成后立即停止，AI 必须显式请用户描述新增代码的项目特定执行逻辑，不得跳过；只有用户明确说“继续执行”后才能进入下一轮。
+10. 用户是熟练的 Go/C++ 程序员，擅长 Linux 网络编程；禁止基础语法/API 测试题，只讨论项目特定的执行逻辑、所有权、并发、ABI、失败策略和设计取舍。
+11. 驱动安装完成和清理完成后必须输出有界清单，逐项记录 expected vs actual 和所有预期之外的驱动、服务、文件、路径、状态与失败；清单失败不得改变主流程，但必须可见。
+12. 项目定位为 Windows x64 Rust SDK；当前 `crates/app/client` 继续作为开发验证 harness，未获单独确认前不重构为库 crate；该定位不改变当前门禁。
 
 ### 2.3 8 字节 VPN 协议基线
 
@@ -219,8 +229,8 @@ NFAPI IP packet callback 的可靠进程归属仍是阻塞设计问题。若不�
 
 | 阶段 | 优先级 | 交付目标 | 阶段出口 |
 | --- | --- | --- | --- |
-| S0 | P0 | 需求、协议、驱动 ABI、失败策略和容量设计冻结 | 设计确认；黄金 fixture 可复现 |
-| S1 | P0 | Cargo workspace、双 runtime、测试基础设施 | fmt、Clippy、test、Windows build 全通过 |
+| S0 | P0 | Rust 1.97.1 MSVC x64、最小 Cargo workspace、自动化测试与 Windows CI | `scripts/verify.ps1` 本地全通过；CI 使用同一入口 |
+| S1 | P0 | 只确认第一个纵向切片所需的范围、协议/ABI、失败/容量和最小共享架构 | 用户确认该切片设计；相关 golden fixture 可复现 |
 | S2 | P0 | PacketBuffer/pool、IPv4、8 字节 codec | codec golden、property/fuzz、池与 MTU 测试通过 |
 | S3 | P0 | Driver trait、Fake NFAPI、真实 DLL backend 和生命周期 | ABI probe、callback、verdict、故障回滚测试通过 |
 | S4 | P0 | 规则、process guard、flow/session、generation | 并发、容量、锁定、过期结果测试通过 |
@@ -294,8 +304,8 @@ NFAPI IP packet callback 的可靠进程归属仍是阻塞设计问题。若不�
 
 ### 7.7 Windows 驱动与平台组合
 
-- [ ] [P0] W01：建立与 demo `nfapi.h` 对齐的 Rust C ABI、动态 DLL backend 和 C probe ABI 校验。测试：size/alignment/offset、calling convention、缺失符号和 Unicode 路径。
-- [ ] [P0] W02：实现驱动注册、启动、`nf_init`、IP handler、规则安装、`nf_free` 和停止。测试：严格调用顺序、每步失败回滚、重复 start/stop 和 callback 静止屏障。
+- [ ] [P0] W01：按 [Windows NFAPI 动态加载阶段设计](windows-driver-loader-design.md) 建立与 demo `nfapi.h` 对齐的 Rust C ABI、精确路径动态 DLL backend 和 C probe ABI 校验；工作区已有 Windows x64 精确路径 DLL owner 和单符号 `GetProcAddress` 学习原型，自动化门禁通过，但正式执行逻辑评审、10 个必需导出的原子校验、完整 ABI/fake DLL/C probe 证据尚未完成，且未启动驱动。测试：size/alignment/offset、calling convention、缺失符号、Unicode/空格路径、相对路径拒绝和 Windows Release 构建。
+- [ ] [P0] W02：按 [Windows NFAPI 动态加载阶段设计](windows-driver-loader-design.md)、[xacc NFAPI 执行逻辑对照](nfapi-lifecycle-reference.md) 和 [可恢复 VM 验收清单](vm-acceptance-checklist.md) 分阶段实现驱动 service 注册/启动/注销、NFAPI filtering session、handler 和规则生命周期；W02-a 设计已更新并确认：采用 xacc 的复制 `.sys` + `nf_registerDriver`，扩展到 `nf_init` + 16+2 无逻辑 callback；错误统一 `Err(String)`，Rust 注释使用中文。`main` 已接入复制、注册、RUNNING 等待、Enter 等待和停止/注销/删除；启动/关闭清单（服务状态、启动类型、ImagePath、驱动 SHA-256、`nfapi.dll` 路径、关闭残留检查）已实现；ImagePath 规范化和清单接入已完成；`EnumServicesStatusExW` ABI/FFI、相关驱动过滤和宽字符串助手已实现，枚举函数和清单接入待下一轮。`nf_init`/callback 尚未实现。测试：fake NFAPI 严格调用顺序、注册/注销失败和重试、重复 start/stop、每步回滚及 callback 静止屏障；真实 driver VM smoke 为附加证据。
 - [ ] [P0] W03：实现 TCP/UDP/IP callback 转换、进程路径解析、endpoint 状态和数据所有权复制。测试：Fake backend、短生命周期 buffer、未知 endpoint、状态竞争和 panic 隔离。
 - [ ] [P0] W04：实现 allow/post/drop/block/rewrite verdict 及 UDP/IP injection。测试：每个输入恰好一个终态动作、地址转换、options 往返和下层错误传播。
 - [ ] [P0] W05：实现 self-process allow、TCP connect、UDP connect/filter、ICMP-as-IP rules 和 loopback 防递归。测试：规则结构 golden、顺序、IPv4/IPv6-mapped loopback。
@@ -387,5 +397,36 @@ cargo build --release --workspace --all-features
 
 ## 11. 更新记录
 
+- 2026-11-20：准备可恢复 VM 验收清单和 `scripts/verify-vm-acceptance.ps1`：校验管理员/快照确认、前置干净状态、运行被测二进制、断言退出 0、服务/文件清理、相关驱动集合不变，并生成报告。未在宿主机执行真实驱动；VM 结果待单独授权。
+- 2026-11-20：补 `nf_init` 失败清理入口 `cleanup_after_init_failure`（不调用 `nf_free`），测试断言 free 未执行；正常和 stdin 失败路径在注销后显式 `drop(library)`。抽出 `wait_for_enter` 解决 Clippy 主函数行数。全量门禁 31 个测试通过。真实 VM、T3 隔离、成功退出 0 仍待处理。
+- 2026-11-20：接入 `nf_init` 和 `nf_setIPEventHandler`：Box 持有 16+2 callback 表，`nf_init` 成功后设置 IP handler；清理顺序改为 `nf_free → stop → unregister → delete`，仅在 `initialized=true` 时调用 `nf_free`。新增 init 状态和 free 顺序测试。全量门禁 30 个测试通过。真实 VM 验证、T3 测试隔离、成功退出 0 仍待处理。
+- 2026-11-20：实现 16+2 无逻辑 callback 表（packed ABI 大小 128/16、6 个复用空回调），暂以 `dead_code` 允许保留；下一轮接入 `nf_init`/`nf_setIPEventHandler` 和 `nf_free` 清理顺序。全量门禁 28 个测试通过。
+- 2026-11-20：补 T8 CLI 退出码集成测试（无参数/相对参数=2、缺失 DLL=1）；补注册失败回滚 helper 测试（copied=true 删除、copied=false 保留），main 使用该 helper。全量门禁 28 个测试通过；成功退出 0、真实 SCM 隔离、`nf_free`/DLL 卸载时机仍需 VM/后续处理。
+- 2026-11-20：实现 `enum_related_drivers` 并接入启动清单：`EnumServicesStatusExW` 1 MiB 缓冲、64 条上限、`truncated` 标记、排除 `netfilter2`、输出相关驱动 state/ImagePath；移除临时 `dead_code` 允许。全量门禁 26 个测试通过。
+- 2026-11-20：补 T4 清单日志失败注入：`append_checklist_log_to` 返回错误，生产包装只告警；测试覆盖目录作为日志目标的失败和正常文件追加。全量门禁 26 个测试通过。清单条目上限/`truncated` 仍待相关驱动枚举接线。
+- 2026-11-20：补 T2 生命周期注入测试：`wait_until_running_with` 覆盖 fake 状态迁移、超时、查询错误；新增注册失败后文件清理、删除失败、cleanup 顺序测试。全量门禁 25 个测试通过。主流程注册失败回滚、`nf_free` 顺序、DLL 卸载时机、T4 清单失败注入、T3 真实 SCM 隔离、T8 退出码 E2E 仍未完成。
+- 2026-11-20：按 `windows-checker` 报告 TR-2026-11-20-01 修复确认问题：cleanup 测试改为注入 stop，不再触碰真实 `netfilter2`；`normalize_image_path` 支持 `\??\` 和 `%SystemRoot%`；`load_exact` 补“不存在文件/非 DLL”负向测试。全量门禁 21 个测试通过。报告中的 T2 完整生命周期矩阵、T3 真实 SCM 测试隔离、T4 清单失败注入、T8 退出码 E2E 仍待处理。
+- 2026-11-20：记录项目定位为 Windows x64 Rust SDK；当前 `crates/app/client` 继续作为开发 harness，不进行库化重构，继续按现有门禁开发。
+- 2026-11-19：实现 `EnumServicesStatusExW` FFI、`ENUM_SERVICE_STATUS_PROCESSW` ABI 结构、相关驱动过滤和宽字符串助手，加入 x64 ABI 大小断言与过滤/转换测试；枚举函数因 100 行门禁拆到下一轮，暂以 `dead_code` 允许保留。
+- 2026-11-19：实现 ImagePath 规范化（引号、小写、`\SystemRoot\`、`\System32\`、相对 `system32\`）并接入启动清单；新增 `service_start_type` 和 `service_image_path` 两项，查询失败时两项都记 `ERR`。
+- 2026-11-19：实现 `QueryServiceConfigW` 服务配置查询，返回启动类型和原始 ImagePath；加入 x64 ABI 大小编译期断言和 `EventLog` 查询测试。启动清单接入、ImagePath 规范化和相关驱动枚举待下一轮。
+- 2026-11-19：实现关闭清单：服务是否残留、驱动文件是否按 `copied` 删除或保留、预存文件 SHA-256 复核；正常清理、注册失败、RUNNING 失败、stdin 失败路径都会输出。
+- 2026-11-19：实现第一版启动清单：服务状态、驱动 SHA-256、`nfapi.dll` 路径，stdout + `logs/driver-checklist.log`，只有 `OK`/`ERR`，`ERR` 不改变退出码。测试 DLL 从 `kernel32.dll` 改为非 KnownDLL 的 `winhttp.dll`，避免测试进程偶发 487；连续 3 次全量门禁通过。
+- 2026-11-19：`scripts/verify.ps1` 在构建前刷新 `crates/**/*.rs` mtime，避免源文件 mtime 落后导致 Cargo 跳过重编译、测试出现错误 487；不删除 target cache。
+- 2026-11-19：新增门禁：驱动安装和清理完成后输出有界启动清单，逐项记录 expected vs actual 及所有预期外驱动、服务、文件、路径、状态和失败；清单失败不改变主流程但必须可见。
+- 2026-11-19：完成复制失败清理：目标原本不存在时删除部分文件，目标原本存在时保留并报告；补充源缺失、目标父目录缺失等失败测试。全量门禁复跑通过。发现一次源文件 mtime 早于测试二进制导致 Cargo 跳过重编译、`native-library` 测试报错误 487；`touch` 强制重建后通过，根因未完全证明。
+- 2026-11-18：澄清门禁：每轮编码后 AI 必须显式请求用户描述项目特定执行逻辑，不得以用户是专家为由跳过；基础语法/API 不考试。
+- 2026-11-18：新增门禁：用户是熟练的 Go/C++/Linux 网络程序员，禁止基础语法/API 测试题；复盘只关注项目特定的执行逻辑、所有权、并发、ABI、失败策略和设计偏差。
+- 2026-11-18：新增门禁：每轮编码完成后立即停止，由用户先描述新增代码执行逻辑；只有用户明确说“继续执行”才能进入下一轮。
+- 2026-11-18：用户决定采用 xacc 的复制 `.sys` + `nf_registerDriver`，扩展到 `nf_init` + 16+2 无逻辑 callback；错误统一 `Err(String)`，不保留错误枚举；W02-a 参数改为 `nfapi.dll` 绝对路径 + 源 `netfilter2.sys` 绝对路径。
+- 2026-11-18：新增 `AGENTS.md` §0.11–§0.16 门禁：极致逻辑简化、禁止功能以外封装/抽象、逻辑一目了然、Rust 注释使用中文、纯数据转换可用简单函数式、避免结构体。
+- 2026-11-18：新增 [xacc NFAPI 执行逻辑对照](nfapi-lifecycle-reference.md)，固定 `xacc-route-sdk2` 提交 `8232fb5d`，记录动态库导入、10+3 导出解析、16+2 callback 注册、`nf_registerDriver`/`nf_init` 启动顺序、停止顺序，以及 xacc 不注销驱动的差异。
+- 2026-11-18：W02-a 第 1 轮实现 `crates/app/client` 入口和参数契约；3 个新测试和全量 `scripts/verify.ps1` 通过；DLL 加载、符号解析和驱动启停未实现，真实驱动未运行。首次全量测试时既有 `native-library` 测试出现过一次错误 487，强制重新编译后消失，疑似陈旧测试二进制，已记录为残留风险。
+- 2026-11-18：用户确认 W02-a 的 `main` 只做内核驱动加载与退出卸载；核实 vendor 头文件和 `nfapi.dll` 行为，记录 `nf_unRegisterDriver` 只删除服务不停服务、注册后需检查服务 RUNNING、service name 固定 `netfilter2`；[设计提案](windows-driver-loader-design.md) 已更新。
+- 2026-11-17：按用户要求将学习门禁从逐行语法讲解/理解小测改为执行逻辑评审；同步更新 `AGENTS.md` §0/§15 和 [新 Session 研发与学习交接](session-handoff.md)，不放宽设计确认、自动化测试、安全、提交或发布门禁。
+- 2026-11-17：新增跨 session 研发与学习交接；记录实际工作区已有 DLL owner/单符号原型、统一门禁结果、正式理解小测未完成和 W02-a 尚未授权。
+- 2026-10-14：S0 完成；Rust 1.97.1 MSVC x64、最小 workspace、Cargo.lock、脚本自测、Windows CI 和统一 Release 验证入口建立，本地 `scripts/verify.ps1` 全量通过。
+- 2026-10-14：按用户要求重划 S0：仅安装固定 Rust 环境并准备 workspace、自动化测试和 Windows CI；原协议/ABI/失败/容量内容降级为后续逐阶段确认的设计草案。
+- 2026-10-14：完成需求/协议/NetFilter ABI/失败策略/容量的初步调研；随后按最新阶段定义降级为后续设计草案，不计入 S0 完成条件。
 - 2026-10-14：重新学习 `gxsdn2`、`xacc-route-sdk2` 和固定团队规范，新增根级 `AGENTS.md`，明确需求/设计、数据面、测试、错误、Git、Tag、发布和停止门禁。
 - 2026-10-14：创建项目进展台账；记录 Rust/NetFilter/8 字节协议基线、P0–P2 实施顺序、完整 xacc 功能映射及逐功能自动化测试要求。

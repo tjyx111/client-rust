@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "freeze_version": "design-draft-v1",
+  "status": "future_incremental_confirmation",
+  "failure_policies": [
+    { "id": "unmatched_or_unknown_process", "action": "direct", "observable": true },
+    { "id": "explicit_block", "action": "fail_closed", "observable": true },
+    { "id": "proxy_admission_failure_before_consume", "action": "fail_open_direct", "observable": true },
+    { "id": "must_proxy_admission_failure", "action": "fail_closed", "observable": true },
+    { "id": "locked_proxy_runtime_failure", "action": "drop_and_terminate_flow", "observable": true },
+    { "id": "driver_start_failure", "action": "rollback_and_fail_start", "observable": true },
+    { "id": "dataplane_queue_full", "action": "nonblocking_policy_reject", "observable": true },
+    { "id": "dataplane_queue_closed", "action": "fail_generation", "observable": true },
+    { "id": "tunnel_reconnect_exhausted", "action": "close_proxy_flows", "observable": true },
+    { "id": "malformed_or_stale_downlink", "action": "drop", "observable": true },
+    { "id": "invalid_config_protocol_or_abi", "action": "fail_start", "observable": true },
+    { "id": "shutdown_deadline_exhausted", "action": "return_failure", "observable": true }
+  ],
+  "capacities": [
+    { "id": "inner_mtu_bytes", "default": 1400, "hard_max": 9000, "exhaustion": "reject", "metrics": ["rejected"] },
+    { "id": "inner_ipv4_protocol_bytes", "default": 65535, "hard_max": 65535, "exhaustion": "reject", "metrics": ["rejected"] },
+    { "id": "packet_pool_bytes", "default": 67108864, "hard_max": 268435456, "exhaustion": "reject_admission", "metrics": ["current", "limit", "high_watermark", "rejected"] },
+    { "id": "callback_queue_packets", "default": 4096, "hard_max": 16384, "exhaustion": "try_send_policy_reject", "metrics": ["current", "limit", "high_watermark", "rejected", "closed"] },
+    { "id": "callback_queue_bytes", "default": 8388608, "hard_max": 33554432, "exhaustion": "try_send_policy_reject", "metrics": ["current", "limit", "high_watermark", "rejected", "closed"] },
+    { "id": "tunnel_queue_packets", "default": 4096, "hard_max": 16384, "exhaustion": "drop_or_terminate_proxy", "metrics": ["current", "limit", "high_watermark", "drop", "closed"] },
+    { "id": "tunnel_queue_bytes", "default": 8388608, "hard_max": 33554432, "exhaustion": "drop_or_terminate_proxy", "metrics": ["current", "limit", "high_watermark", "drop", "closed"] },
+    { "id": "tcp_flows", "default": 8192, "hard_max": 65536, "exhaustion": "policy_reject_new", "metrics": ["current", "limit", "high_watermark", "rejected"] },
+    { "id": "udp_sessions", "default": 16384, "hard_max": 131072, "exhaustion": "policy_reject_new", "metrics": ["current", "limit", "high_watermark", "rejected"] },
+    { "id": "pending_resolution", "default": 4096, "hard_max": 16384, "exhaustion": "reject_new", "metrics": ["current", "limit", "high_watermark", "rejected"] },
+    { "id": "decision_cache_entries", "default": 65536, "hard_max": 262144, "exhaustion": "lru_evict", "metrics": ["current", "limit", "high_watermark", "evicted"] },
+    { "id": "ipv4_reassembly_sets", "default": 2048, "hard_max": 8192, "exhaustion": "drop_oldest", "metrics": ["current", "limit", "high_watermark", "drop", "expired"] },
+    { "id": "ipv4_reassembly_bytes", "default": 16777216, "hard_max": 67108864, "exhaustion": "drop_oldest", "metrics": ["current", "limit", "high_watermark", "drop"] },
+    { "id": "ipv4_reassembly_timeout_seconds", "default": 15, "hard_max": 30, "exhaustion": "expire", "metrics": ["expired"] },
+    { "id": "dns_cache_entries", "default": 16384, "hard_max": 65536, "exhaustion": "lru_evict", "metrics": ["current", "limit", "high_watermark", "evicted"] },
+    { "id": "closed_connection_records", "default": 10000, "hard_max": 50000, "exhaustion": "lru_evict_closed", "metrics": ["current", "limit", "high_watermark", "evicted"] },
+    { "id": "actor_events_per_poll", "default": 256, "hard_max": 1024, "exhaustion": "yield", "metrics": ["yield"] },
+    { "id": "actor_bytes_per_poll", "default": 1048576, "hard_max": 4194304, "exhaustion": "yield", "metrics": ["yield"] },
+    { "id": "tunnel_reconnect_attempts", "default": 5, "hard_max": 10, "exhaustion": "fail_generation", "metrics": ["attempts", "exhausted"] },
+    { "id": "tunnel_reconnect_budget_seconds", "default": 30, "hard_max": 60, "exhaustion": "fail_generation", "metrics": ["elapsed", "exhausted"] },
+    { "id": "shutdown_deadline_seconds", "default": 10, "hard_max": 30, "exhaustion": "return_failure", "metrics": ["elapsed", "exhausted"] }
+  ]
+}

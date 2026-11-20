@@ -1,0 +1,5 @@
+/target/
+/artifacts/verification/
+*.pdb
+# local node inventory (contains public IPs); keep out of version control
+/nodes.txt

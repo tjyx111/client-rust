@@ -1,0 +1,19 @@
+[workspace]
+members = [
+    "crates/app/client",
+    "crates/foundation/core",
+    "crates/platform/windows/native-library",
+]
+resolver = "3"
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.97.1"
+license = "MIT OR Apache-2.0"
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }

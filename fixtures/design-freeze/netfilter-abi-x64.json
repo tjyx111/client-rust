@@ -1,0 +1,164 @@
+{
+  "schema_version": 1,
+  "status": "future_design_draft",
+  "sdk": "nfsdk-demo-1.7.6.4",
+  "variant": "wfp-c-api-x64",
+  "rust_target": "x86_64-pc-windows-msvc",
+  "calling_convention": "cdecl",
+  "pointer_size": 8,
+  "pack": 1,
+  "source_worktree_clean": false,
+  "sources": [
+    {
+      "path": "D:/code/lbsprivate/client-cpp/include/simple_vpn/protocol/vpn_legacy.h",
+      "sha256": "2dcfb24e954a8951783bda8f4aae841e3bd19417f0e666a07db51e11840fcd2a"
+    },
+    {
+      "path": "D:/code/lbsprivate/client-cpp/nfsdk-demo-1.7.6.4/nfsdk/wfp/include/nfapi.h",
+      "sha256": "be868cfe554f889675f90776f53081bdbabcea54ce85f214aa306a2996b6fc3f"
+    },
+    {
+      "path": "D:/code/lbsprivate/client-cpp/nfsdk-demo-1.7.6.4/nfsdk/include/nfevents.h",
+      "sha256": "ae3117af8ff067095b907807532d5975183f44f391b66506c6c1e13cc5d80684"
+    },
+    {
+      "path": "D:/code/lbsprivate/client-cpp/nfsdk-demo-1.7.6.4/nfsdk/include/nfdriver_data.h",
+      "sha256": "5cf8263e816eb179dfa9644e0b3c6455497df36ae7ae31f7d9f793039ae78c3e"
+    }
+  ],
+  "artifacts": [
+    {
+      "name": "nfapi.dll",
+      "path": "D:/code/lbsprivate/client-cpp/nfsdk-demo-1.7.6.4/nfsdk/wfp/bin/release_c_api/x64/nfapi.dll",
+      "sha256": "a4981dd3e8e0449ec6c907858fc6b0754f05727fe368a4d511df901c6856d4ad"
+    },
+    {
+      "name": "netfilter2.sys",
+      "path": "D:/code/lbsprivate/client-cpp/nfsdk-demo-1.7.6.4/nfsdk/wfp/bin/driver/x64/netfilter2.sys",
+      "sha256": "ddc689515291f9ef0eccbe022b3cf406041d61024fbd7e98ad1422cc03733201"
+    }
+  ],
+  "constants": {
+    "NF_MAX_ADDRESS_LENGTH": 28,
+    "NF_MAX_IP_ADDRESS_LENGTH": 16,
+    "NF_D_IN": 1,
+    "NF_D_OUT": 2,
+    "NF_D_BOTH": 3,
+    "NF_ALLOW": 0,
+    "NF_BLOCK": 1,
+    "NF_FILTER": 2,
+    "NF_INDICATE_CONNECT_REQUESTS": 16,
+    "NF_FILTER_AS_IP_PACKETS": 128,
+    "NF_STATUS_SUCCESS": 0
+  },
+  "types": [
+    {
+      "name": "ENDPOINT_ID",
+      "size": 8,
+      "align": 8,
+      "fields": []
+    },
+    {
+      "name": "NF_RULE",
+      "size": 83,
+      "align": 1,
+      "fields": [
+        { "name": "protocol", "offset": 0, "size": 4 },
+        { "name": "processId", "offset": 4, "size": 4 },
+        { "name": "direction", "offset": 8, "size": 1 },
+        { "name": "localPort", "offset": 9, "size": 2 },
+        { "name": "remotePort", "offset": 11, "size": 2 },
+        { "name": "ip_family", "offset": 13, "size": 2 },
+        { "name": "localIpAddress", "offset": 15, "size": 16 },
+        { "name": "localIpAddressMask", "offset": 31, "size": 16 },
+        { "name": "remoteIpAddress", "offset": 47, "size": 16 },
+        { "name": "remoteIpAddressMask", "offset": 63, "size": 16 },
+        { "name": "filteringFlag", "offset": 79, "size": 4 }
+      ]
+    },
+    {
+      "name": "NF_TCP_CONN_INFO",
+      "size": 67,
+      "align": 1,
+      "fields": [
+        { "name": "filteringFlag", "offset": 0, "size": 4 },
+        { "name": "processId", "offset": 4, "size": 4 },
+        { "name": "direction", "offset": 8, "size": 1 },
+        { "name": "ip_family", "offset": 9, "size": 2 },
+        { "name": "localAddress", "offset": 11, "size": 28 },
+        { "name": "remoteAddress", "offset": 39, "size": 28 }
+      ]
+    },
+    {
+      "name": "NF_UDP_CONN_INFO",
+      "size": 34,
+      "align": 1,
+      "fields": [
+        { "name": "processId", "offset": 0, "size": 4 },
+        { "name": "ip_family", "offset": 4, "size": 2 },
+        { "name": "localAddress", "offset": 6, "size": 28 }
+      ]
+    },
+    {
+      "name": "NF_UDP_CONN_REQUEST",
+      "size": 66,
+      "align": 1,
+      "fields": [
+        { "name": "filteringFlag", "offset": 0, "size": 4 },
+        { "name": "processId", "offset": 4, "size": 4 },
+        { "name": "ip_family", "offset": 8, "size": 2 },
+        { "name": "localAddress", "offset": 10, "size": 28 },
+        { "name": "remoteAddress", "offset": 38, "size": 28 }
+      ]
+    },
+    {
+      "name": "NF_UDP_OPTIONS",
+      "size": 9,
+      "align": 1,
+      "fields": [
+        { "name": "flags", "offset": 0, "size": 4 },
+        { "name": "optionsLength", "offset": 4, "size": 4 },
+        { "name": "options", "offset": 8, "size": 1 }
+      ]
+    },
+    {
+      "name": "NF_IP_PACKET_OPTIONS",
+      "size": 22,
+      "align": 1,
+      "fields": [
+        { "name": "ip_family", "offset": 0, "size": 2 },
+        { "name": "ipHeaderSize", "offset": 2, "size": 4 },
+        { "name": "compartmentId", "offset": 6, "size": 4 },
+        { "name": "interfaceIndex", "offset": 10, "size": 4 },
+        { "name": "subInterfaceIndex", "offset": 14, "size": 4 },
+        { "name": "flags", "offset": 18, "size": 4 }
+      ]
+    }
+  ],
+  "callback_tables": [
+    {
+      "name": "NF_EventHandler",
+      "count": 16,
+      "size": 128,
+      "callbacks": [
+        "threadStart", "threadEnd", "tcpConnectRequest", "tcpConnected",
+        "tcpClosed", "tcpReceive", "tcpSend", "tcpCanReceive", "tcpCanSend",
+        "udpCreated", "udpConnectRequest", "udpClosed", "udpReceive", "udpSend",
+        "udpCanReceive", "udpCanSend"
+      ]
+    },
+    {
+      "name": "NF_IPEventHandler",
+      "count": 2,
+      "size": 16,
+      "callbacks": ["ipReceive", "ipSend"]
+    }
+  ],
+  "required_symbols": [
+    "nf_init", "nf_free", "nf_registerDriver", "nf_registerDriverEx",
+    "nf_unRegisterDriver", "nf_tcpPostSend", "nf_tcpPostReceive",
+    "nf_udpPostSend", "nf_udpPostReceive", "nf_ipPostSend", "nf_ipPostReceive",
+    "nf_addRule", "nf_deleteRules", "nf_getTCPConnInfo", "nf_getUDPConnInfo",
+    "nf_setIPEventHandler"
+  ]
+}

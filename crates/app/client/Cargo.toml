@@ -1,0 +1,23 @@
+[package]
+name = "simple-vpn-client"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[[bin]]
+name = "simple-vpn-client"
+path = "src/main.rs"
+
+[dependencies]
+sha2 = "0.10"
+simple-vpn-native-library = { path = "../../platform/windows/native-library" }
+
+[lints.rust]
+unsafe_code = "allow"
+unsafe_op_in_unsafe_fn = "deny"
+
+[lints.clippy]
+all = { level = "deny", priority = -1 }
+pedantic = { level = "deny", priority = -1 }

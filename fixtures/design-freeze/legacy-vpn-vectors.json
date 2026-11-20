@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "status": "future_design_draft",
+  "protocol": "legacy-vpn-ipv4",
+  "header_size": 8,
+  "canonical_first_byte": "0x90",
+  "ipv4_next_protocol": "0x01",
+  "inner_ipv4_hex": "4500001c1234000040114e8d0a0000010808080803e8003500080000",
+  "encoder_vectors": [
+    {
+      "name": "session_without_next_node",
+      "session_id": "0x12345678",
+      "next_node_id": "0x0000",
+      "expected_composed_session_id": "0x12345678",
+      "expected_header_hex": "9001000012345678",
+      "expected_datagram_hex": "90010000123456784500001c1234000040114e8d0a0000010808080803e8003500080000"
+    },
+    {
+      "name": "session_with_next_node",
+      "session_id": "0x12340000",
+      "next_node_id": "0x03e9",
+      "expected_composed_session_id": "0x123403e9",
+      "expected_header_hex": "90010000123403e9",
+      "expected_datagram_hex": "90010000123403e94500001c1234000040114e8d0a0000010808080803e8003500080000"
+    }
+  ],
+  "decoder_vectors": [
+    {
+      "name": "canonical",
+      "datagram_hex": "90010000123456784500001c1234000040114e8d0a0000010808080803e8003500080000",
+      "expected_header_hex": "9001000012345678",
+      "expected_session_id": "0x12345678",
+      "expected_flags": "0x0000"
+    },
+    {
+      "name": "preserve_low_nibble_and_unknown_flags",
+      "datagram_hex": "9f01beefdeadbeef4500001c1234000040114e8d0a0000010808080803e8003500080000",
+      "expected_header_hex": "9f01beefdeadbeef",
+      "expected_session_id": "0xdeadbeef",
+      "expected_flags": "0xbeef"
+    }
+  ],
+  "invalid_vectors": [
+    {
+      "name": "too_small",
+      "datagram_hex": "9001000012345678",
+      "expected_error": "packet_too_small"
+    },
+    {
+      "name": "bad_magic",
+      "datagram_hex": "80010000123456784500001c1234000040114e8d0a0000010808080803e8003500080000",
+      "expected_error": "invalid_first_byte"
+    },
+    {
+      "name": "unsupported_next_protocol",
+      "datagram_hex": "90020000123456784500001c1234000040114e8d0a0000010808080803e8003500080000",
+      "expected_error": "unsupported_next_protocol"
+    },
+    {
+      "name": "inner_not_ipv4",
+      "datagram_hex": "90010000123456786500001c1234000040114e8d0a0000010808080803e8003500080000",
+      "expected_error": "inner_not_ipv4"
+    },
+    {
+      "name": "ihl_too_small",
+      "datagram_hex": "90010000123456784400001c1234000040114e8d0a0000010808080803e8003500080000",
+      "expected_error": "invalid_ipv4_ihl"
+    },
+    {
+      "name": "total_length_mismatch",
+      "datagram_hex": "90010000123456784500001d1234000040114e8d0a0000010808080803e8003500080000",
+      "expected_error": "ipv4_total_length_mismatch"
+    },
+    {
+      "name": "trailing_bytes",
+      "datagram_hex": "90010000123456784500001c1234000040114e8d0a0000010808080803e800350008000000",
+      "expected_error": "ipv4_total_length_mismatch"
+    }
+  ]
+}
